@@ -73,7 +73,7 @@ argparser.add_argument(
 args = argparser.parse_args()
 
 with open(args.config, 'r') as f:
-    config = yaml.load(f.read())
+    config = yaml.safe_load(f.read())
 
 def rofi(prompt):
     process = subprocess.Popen(
