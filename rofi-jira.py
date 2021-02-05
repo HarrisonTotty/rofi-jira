@@ -115,26 +115,34 @@ j = jira.JIRA(
 issues = j.search_issues(
     sel_search,
     maxResults = 2048,
-    fields = ['summary', 'priority'],
+    fields = ['summary', 'status'],
     json_result = True
 )['issues']
 
 with open('/tmp/rofi-jira.out', 'w') as fo:
     for i in issues:
-        pri_name = i['fields']['priority']['name']
-        if pri_name == 'Blocker':
-            pri = '/'
-        elif pri_name == 'Critical':
-            pri = '!'
-        elif pri_name == 'Major':
-            pri = '^'
-        elif pri_name == 'Minor':
-            pri = '-'
+        st_name = i['fields']['status']['name'].lower()
+        if st_name == 'backlog':
+            st = 'B'
+        elif st_name == 'to do':
+            st = '⚐'
+        elif st_name == 'in progress':
+            st = '⚑'
+        elif st_name == 'waiting on task':
+            st = '⚡'
+        elif st_name == 'code review':
+            st = ''
+        elif st_name == 'awaiting verification':
+            st = '✓'
+        elif st_name == 'done':
+            st = '✔'
+        elif st_name == 'cancelled':
+            st = '✘'
         else:
-            pri = ' '
+            st = '?'
         fo.write(
-            '[{pri}] {tid} : {desc}\n'.format(
-                pri = pri,
+            '[{st}] {tid} : {desc}\n'.format(
+                st = st,
                 tid = i['key'],
                 desc = i['fields']['summary']
             )
@@ -142,5 +150,5 @@ with open('/tmp/rofi-jira.out', 'w') as fo:
 
 (j_out, j_ec) = rofi('Search tickets : ')
 if j_out:
-    url = server + '/browse/' + j_out.split(']', 1)[1].split(':', 1)[0].strip()
+    url = args.server_url + 'browse/' + j_out.split(']', 1)[1].split(':', 1)[0].strip()
     os.system("xdg-open '" + url + "'")
